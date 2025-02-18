@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+    <title>Rasa REST Chatbot</title>
+    <style>
+        /* CSS RESET */
+        html, body, div, span, applet, object, iframe,
+        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+        a, abbr, acronym, address, big, cite, code,
+        del, dfn, em, img, ins, kbd, q, s, samp,
+        small, strike, strong, sub, sup, tt, var,
+        b, u, i, center,
+        dl, dt, dd, ol, ul, li,
+        fieldset, form, label, legend,
+        table, caption, tbody, tfoot, thead, tr, th, td,
+        article, aside, canvas, details, embed,
+        figure, figcaption, footer, header, hgroup,
+        menu, nav, output, ruby, section, summary,
+        time, mark, audio, video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font: inherit;
+            vertical-align: baseline;
+        }
+
+        body {
+            --white-color: #f3f4fb;
+            --black-color: black;
+            --blue-color: #5a18ee;
+            --light-purple-color: #7f7afc;
+            --light-violet-color: #8c54f4;
+            --darker-violet-color: #713dc3;
+            --dark-violet-color: #5d2db0;
+            font-family: Roboto, sans-serif;
+            background-color: var(--blue-color);
+        }
+
+        #form {
+            padding: 0.25rem;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            height: 3rem;
+            box-sizing: border-box;
+            background-color: var(--black-color);
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 0 1rem;
+            border-radius: 2rem;
+            margin: 0.25rem;
+            background-color: var(--white-color);
+        }
+
+        #message-input:focus {
+            outline: none;
+        }
+
+        .button {
+            background: var(--light-violet-color);
+            border: none;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: var(--white-color);
+            font: inherit;
+        }
+
+        .button:hover {
+            background: var(--darker-violet-color);
+        }
+
+        .button:active {
+            background: var(--dark-violet-color);
+        }
+
+        #messages {
+            display: flex;
+            flex-direction: column;
+            padding: 10px 10px 60px 10px;
+        }
+
+        .message {
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            word-wrap: break-word;
+            max-width: calc(100% - 40px - 32px);
+            margin-bottom: 10px;
+        }
+
+        .message_received {
+            background: var(--white-color);
+            color: var(--black-color);
+            border-bottom-left-radius: 0;
+            align-self: flex-start;
+        }
+
+        .message_sent {
+            color: var(--white-color);
+            background: var(--light-purple-color);
+            border-bottom-right-radius: 0;
+            align-self: flex-end;
+        }
+
+        .header {
+            background-color: var(--black-color);
+            color: var(--white-color);
+            text-align: center;
+            padding: 12px;
+        }
+
+        .title {
+            font-size: 23px;
+        }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <p class="title">Chat with Rasa Chatbot (REST API)</p>
+    </header>
+    <div id="messages"></div>
+    <form id="form">
+      <input id="message-input" autocomplete="off" autofocus/>
+      <button class="button">Gửi</button>
+    </form>
+
+    <script>
+        const rasaServerUrl = "https://be07-2405-4803-a0b7-3bd0-c09a-9ac2-d5ad-f3c4.ngrok-free.app/webhooks/rest/webhook";  // Cập nhật URL nếu cần (vd: ngrok)
+        const messages = document.getElementById('messages');
+        const form = document.getElementById('form');
+        const messageInput = document.getElementById('message-input');
+
+        function scrollToBottom() {
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function appendMessage(msg, type) {
+            const item = document.createElement('div');
+            item.textContent = msg;
+            item.classList.add("message");
+            item.classList.add(`message_${type}`);
+            messages.appendChild(item);
+            scrollToBottom();
+        }
+
+        async function sendMessageToRasa(message) {
+            appendMessage(message, "sent");
+            
+            try {
+                const response = await fetch(rasaServerUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ sender: "user", message: message })
+                });
+
+                const data = await response.json();
+                console.log("Bot response:", data);
+
+                if (data.length === 0) {
+                    appendMessage("⚠️ Bot không có phản hồi.", "received");
+                } else {
+                    data.forEach((msg) => {
+                        if (msg.text) {
+                            appendMessage(msg.text, "received");
+                        }
+                        if (msg.image) {
+                            appendImage(msg.image, "received");
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Lỗi kết nối đến Rasa:", error);
+                appendMessage("❌ Không thể kết nối đến chatbot.", "received");
+            }
+        }
+
+        function appendImage(src, type) {
+            const item = document.createElement('div');
+            item.classList.add("message");
+            item.classList.add(`message_${type}`);
+            const img = document.createElement('img');
+            img.src = src;
+            img.onload = scrollToBottom;
+            item.appendChild(img);
+            messages.appendChild(item);
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const msg = messageInput.value.trim();
+            if (msg) {
+                sendMessageToRasa(msg);
+                messageInput.value = '';
+            }
+        });
+
+    </script>
+  </body>
+</html>
