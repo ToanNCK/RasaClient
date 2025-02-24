@@ -175,6 +175,11 @@
                         if (msg.text) {
                             appendMessage(msg.text, "received");
                         }
+
+                        if (msg.buttons) {
+                            appendButtons(msg.buttons);
+                        }
+                        
                         if (msg.image) {
                             appendImage(msg.image, "received");
                         }
