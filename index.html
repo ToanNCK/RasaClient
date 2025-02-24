@@ -131,7 +131,9 @@
     </form>
 
     <script>
-        const rasaServerUrl = "https://be07-2405-4803-a0b7-3bd0-c09a-9ac2-d5ad-f3c4.ngrok-free.app/webhooks/rest/webhook";  // Cập nhật URL nếu cần (vd: ngrok)
+        const urlNgrok =
+        "https://c942-2405-4803-a0b7-3bd0-7943-adfa-ab88-8dd3.ngrok-free.app";
+        const rasaServerUrl = `${urlNgrok}/webhooks/rest/webhook`; // Cập nhật URL nếu cần (vd: ngrok)
         const messages = document.getElementById('messages');
         const form = document.getElementById('form');
         const messageInput = document.getElementById('message-input');
@@ -149,8 +151,12 @@
             scrollToBottom();
         }
 
-        async function sendMessageToRasa(message) {
-            appendMessage(message, "sent");
+        async function sendMessageToRasa(message, messageBtn = '') {
+            if (messageBtn) {
+              appendMessage(messageBtn, "sent");
+            }else {
+              appendMessage(message, "sent");
+            }
             
             try {
                 const response = await fetch(rasaServerUrl, {
@@ -189,6 +195,26 @@
             img.onload = scrollToBottom;
             item.appendChild(img);
             messages.appendChild(item);
+        }
+
+      // Hàm hiển thị button từ phản hồi của Rasa
+      function appendButtons(buttons) {
+          const buttonContainer = document.createElement("div");
+          buttonContainer.style.display = "flex";
+          buttonContainer.style.gap = "6px";
+          buttonContainer.style.margin = "0 0 10px 0";
+          buttonContainer.style.fontSize = "small";
+  
+          buttons.forEach((button) => {
+            const btn = document.createElement("button");
+            btn.textContent = button.title;
+            btn.classList.add("button");
+            btn.onclick = () => sendMessageToRasa(button.payload, button.title); // Gửi payload của button khi bấm
+            buttonContainer.appendChild(btn);
+          });
+  
+          messages.appendChild(buttonContainer);
+          scrollToBottom();
         }
 
         form.addEventListener('submit', function (e) {
