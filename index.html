@@ -228,8 +228,9 @@
               }
             }else{
               btn.onclick = () => sendMessageToRasa(button.payload, button.title); // Gửi payload của button khi bấm
-              buttonContainer.appendChild(btn);
             }
+
+            buttonContainer.appendChild(btn);
           });
   
           messages.appendChild(buttonContainer);
