@@ -188,6 +188,14 @@
                         if (msg.image) {
                             appendImage(msg.image, "received");
                         }
+
+                        if (msg.attachment && msg.attachment.type === "video") {
+                            appendVideo(msg.attachment.payload, "received");
+                        }
+    
+                        if (msg.custom && msg.custom.video) {
+                            appendVideo(msg.custom.video, "received");
+                        }
                     });
                 }
             } catch (error) {
@@ -206,6 +214,23 @@
             item.appendChild(img);
             messages.appendChild(item);
         }
+
+      function appendVideo(videoUrl, type) {
+        const item = document.createElement('div');
+        item.classList.add("message");
+        item.classList.add(`message_${type}`);
+        
+        const iframe = document.createElement('iframe');
+        iframe.src = videoUrl.replace("watch?v=", "embed/");
+        iframe.width = "100%";
+        iframe.height = "315";
+        iframe.allow = "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture";
+        iframe.allowFullscreen = true;
+
+        item.appendChild(iframe);
+        messages.appendChild(item);
+        scrollToBottom();
+      }
 
       // Hàm hiển thị button từ phản hồi của Rasa
       function appendButtons(buttons) {
