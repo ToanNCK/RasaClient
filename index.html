@@ -64,7 +64,7 @@
         .button {
             background: var(--light-violet-color);
             border: none;
-            padding: 0 1rem;
+            padding: 0.3rem 1rem;
             margin: 0.25rem;
             border-radius: 3px;
             outline: none;
@@ -219,8 +219,17 @@
             const btn = document.createElement("button");
             btn.textContent = button.title;
             btn.classList.add("button");
-            btn.onclick = () => sendMessageToRasa(button.payload, button.title); // Gửi payload của button khi bấm
-            buttonContainer.appendChild(btn);
+            if (button.payload.indexOf("http://") == 0 || button.payload.indexOf("https://") == 0) {
+              btn.onclick = () => {
+                window.open(
+                  button.payload,
+                  '_blank' // <- This is what makes it open in a new window.
+                );
+              }
+            }else{
+              btn.onclick = () => sendMessageToRasa(button.payload, button.title); // Gửi payload của button khi bấm
+              buttonContainer.appendChild(btn);
+            }
           });
   
           messages.appendChild(buttonContainer);
