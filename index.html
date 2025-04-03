@@ -1,276 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <link rel="icon" type="image/x-icon" href="/favicon.webp"/>
-    <title>Chatbot By ToanNCK</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./chatbot-ui.css" />
+    <title>Di Sản UI ChatBot</title>
+
     <style>
-        /* CSS RESET */
-        html, body, div, span, applet, object, iframe,
-        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-        a, abbr, acronym, address, big, cite, code,
-        del, dfn, em, img, ins, kbd, q, s, samp,
-        small, strike, strong, sub, sup, tt, var,
-        b, u, i, center,
-        dl, dt, dd, ol, ul, li,
-        fieldset, form, label, legend,
-        table, caption, tbody, tfoot, thead, tr, th, td,
-        article, aside, canvas, details, embed,
-        figure, figcaption, footer, header, hgroup,
-        menu, nav, output, ruby, section, summary,
-        time, mark, audio, video {
-            margin: 0;
-            padding: 0;
-            border: 0;
-            font: inherit;
-            vertical-align: baseline;
-        }
-
-        body {
-            --white-color: #f3f4fb;
-            --black-color: black;
-            --blue-color: #5a18ee;
-            --light-purple-color: #7f7afc;
-            --light-violet-color: #8c54f4;
-            --darker-violet-color: #713dc3;
-            --dark-violet-color: #5d2db0;
-            font-family: Roboto, sans-serif;
-            background-color: var(--blue-color);
-        }
-
-        #form {
-            padding: 0.25rem;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            height: 3rem;
-            box-sizing: border-box;
-            background-color: var(--black-color);
-        }
-
-        #message-input {
-            flex-grow: 1;
-            padding: 0 1rem;
-            border-radius: 2rem;
-            margin: 0.25rem;
-            background-color: var(--white-color);
-        }
-
-        #message-input:focus {
-            outline: none;
-        }
-
-        .button {
-            background: var(--light-violet-color);
-            border: none;
-            padding: 0.3rem 1rem;
-            margin: 0.25rem;
-            border-radius: 3px;
-            outline: none;
-            color: var(--white-color);
-            font: inherit;
-        }
-
-        .button:hover {
-            background: var(--darker-violet-color);
-        }
-
-        .button:active {
-            background: var(--dark-violet-color);
-        }
-
-        #messages {
-            display: flex;
-            flex-direction: column;
-            padding: 10px 10px 60px 10px;
-        }
-
-        .message {
-            padding: 0.5rem 1rem;
-            border-radius: 10px;
-            word-wrap: break-word;
-            max-width: calc(100% - 40px - 32px);
-            margin-bottom: 10px;
-        }
-
-        .message_received {
-            background: var(--white-color);
-            color: var(--black-color);
-            border-bottom-left-radius: 0;
-            align-self: flex-start;
-            width: 100%;
-        }
-
-        img {
-            width: 100%;
-        }
-
-        .message_sent {
-            color: var(--white-color);
-            background: var(--light-purple-color);
-            border-bottom-right-radius: 0;
-            align-self: flex-end;
-        }
-
-        .header {
-            background-color: var(--black-color);
-            color: var(--white-color);
-            text-align: center;
-            padding: 12px;
-        }
-
-        .title {
-            font-size: 23px;
-        }
-    </style>
-  </head>
-  <body>
-    <header class="header">
-      <p class="title">Demo Chat Chatbot HDV</p>
-    </header>
-    <div id="messages"></div>
-    <form id="form">
-      <input id="message-input" autocomplete="off" autofocus/>
-      <button class="button">Gửi</button>
-    </form>
-
-    <script>
-        const urlNgrok =
-        "https://composed-sure-muskrat.ngrok-free.app";
-        const rasaServerUrl = `${urlNgrok}/webhooks/rest/webhook`; // Cập nhật URL nếu cần (vd: ngrok)
-        const messages = document.getElementById('messages');
-        const form = document.getElementById('form');
-        const messageInput = document.getElementById('message-input');
-
-        function scrollToBottom() {
-            window.scrollTo(0, document.body.scrollHeight);
-        }
-
-        function appendMessage(msg, type) {
-            const item = document.createElement('div');
-            item.textContent = msg;
-            item.classList.add("message");
-            item.classList.add(`message_${type}`);
-            messages.appendChild(item);
-            scrollToBottom();
-        }
-
-        async function sendMessageToRasa(message, messageBtn = '') {
-            if (messageBtn) {
-              appendMessage(messageBtn, "sent");
-            }else {
-              appendMessage(message, "sent");
-            }
-            
-            try {
-                const response = await fetch(rasaServerUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ sender: "user", message: message })
-                });
-
-                const data = await response.json();
-                console.log("Bot response:", data);
-
-                if (data.length === 0) {
-                    appendMessage("⚠️ Bot không có phản hồi.", "received");
-                } else {
-                    data.forEach((msg) => {
-                        if (msg.text) {
-                            appendMessage(msg.text, "received");
-                        }
-
-                        if (msg.buttons) {
-                            appendButtons(msg.buttons);
-                        }
-                        
-                        if (msg.image) {
-                            appendImage(msg.image, "received");
-                        }
-
-                        if (msg.attachment && msg.attachment.type === "video") {
-                            appendVideo(msg.attachment.payload, "received");
-                        }
-    
-                        if (msg.custom && msg.custom.video) {
-                            appendVideo(msg.custom.video, "received");
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error("Lỗi kết nối đến Rasa:", error);
-                appendMessage("❌ Không thể kết nối đến chatbot.", "received");
-            }
-        }
-
-        function appendImage(src, type) {
-            const item = document.createElement('div');
-            item.classList.add("message");
-            item.classList.add(`message_${type}`);
-            const img = document.createElement('img');
-            img.src = src;
-            img.onload = scrollToBottom;
-            item.appendChild(img);
-            messages.appendChild(item);
-        }
-
-      function appendVideo(videoUrl, type) {
-        const item = document.createElement('div');
-        item.classList.add("message");
-        item.classList.add(`message_${type}`);
-        
-        const iframe = document.createElement('iframe');
-        iframe.src = videoUrl.replace("watch?v=", "embed/");
-        iframe.width = "100%";
-        iframe.height = "315";
-        iframe.allow = "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture";
-        iframe.allowFullscreen = true;
-
-        item.appendChild(iframe);
-        messages.appendChild(item);
-        scrollToBottom();
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: #e5e5e5;
+        display: flex;
+        justify-content: center;
+        height: 100vh;
+        width: 100%;
       }
 
-      // Hàm hiển thị button từ phản hồi của Rasa
-      function appendButtons(buttons) {
-          const buttonContainer = document.createElement("div");
-          buttonContainer.style.display = "flex";
-          buttonContainer.style.gap = "6px";
-          buttonContainer.style.margin = "0 0 10px 0";
-          buttonContainer.style.fontSize = "small";
-  
-          buttons.forEach((button) => {
-            const btn = document.createElement("button");
-            btn.textContent = button.title;
-            btn.classList.add("button");
-            if (button.payload.indexOf("http://") == 0 || button.payload.indexOf("https://") == 0) {
-              btn.onclick = () => {
-                window.open(
-                  button.payload,
-                  '_blank' // <- This is what makes it open in a new window.
-                );
-              }
-            }else{
-              btn.onclick = () => sendMessageToRasa(button.payload, button.title); // Gửi payload của button khi bấm
-            }
+      section {
+        max-width: 1100px;
+        margin: auto;
+        text-align: center;
+        padding: 0 1rem;
+      }
 
-            buttonContainer.appendChild(btn);
-          });
-  
-          messages.appendChild(buttonContainer);
-          scrollToBottom();
-        }
+      h1 {
+        font-size: 3rem;
+        margin-bottom: 2rem;
+      }
 
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const msg = messageInput.value.trim();
-            if (msg) {
-                sendMessageToRasa(msg);
-                messageInput.value = '';
-            }
-        });
+      p {
+        font-size: 2rem;
+      }
+    </style>
+  </head>
 
+  <body>
+    <section>
+      <h1>Di sản ChatBot</h1>
+      <p>Nhấp vào nút trò chuyện để bắt đầu trò chuyện</p>
+    </section>
+
+    <div id="chat-container"></div>
+    <script src="./chatbot-ui.js"></script>
+    <script>
+      createChatBot(
+        (host = "http://localhost:16008/v5/ChatbotTool/SendMessageChatbot"),
+        (botLogo = "./imgs/bot-logo.png"),
+        (title = "Di Sản BOT"),
+        (welcomeMessage = "Giới thiệu về bạn"),
+        (inactiveMsg =
+          "Server is down, Please contact the developer to activate it"),
+        (theme = "purple")
+      );
     </script>
   </body>
 </html>
