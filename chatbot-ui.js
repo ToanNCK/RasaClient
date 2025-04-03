@@ -186,7 +186,6 @@ function send(message) {
             'chatbotId': '4c236233-9479-494c-a24d-63fc891065bb'
         }),
         success: function(data, textStatus) {
-            debugger
             if (data.data != null) {
                 setBotResponse(data.data);
             }
@@ -308,14 +307,12 @@ function chatbotTheme(theme) {
 }
 
 function createChatBot(hostURL, botLogo, title, welcomeMessage, inactiveMsg, theme = "blue") {
-
     host = hostURL;
     botLogoPath = botLogo;
     inactiveMessage = inactiveMsg;
     init()
     const msg = document.querySelector(".msg");
     msg.innerText = welcomeMessage;
-
     const botTitle = document.querySelector(".bot-title");
     botTitle.innerText = title;
 
