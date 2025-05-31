@@ -175,23 +175,25 @@ function send(message) {
     chatInput.type = "text"
     passwordInput = false;
     chatInput.focus();
-    console.log("User Message:", message)
     $.ajax({
         url: host,
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
             "message": message,
-            "sender": "User",
-            'chatbotId': '4c236233-9479-494c-a24d-63fc891065bb'
+            "sender": new Date().getTime(), // dùng timestamp dạng long cho trường sender
+            'language': 'vn' // 'vn' for Vietnamese, 'en' for English, 'cn' for Chinese
         }),
-        success: function(data, textStatus) {
-            if (data.data != null) {
-                setBotResponse(data.data);
+        headers: {
+            "Authorization": "Bearer API_KEY_ADMIN"
+        },
+        success: function (data, textStatus) {
+            if (data != null) {
+                setBotResponse(data);
             }
             console.log("Rasa Response: ", data, "\n Status:", textStatus)
         },
-        error: function(errorMessage) {
+        error: function (errorMessage) {
             setBotResponse("");
             console.log('Error' + errorMessage);
 
@@ -203,7 +205,7 @@ function send(message) {
 
 //------------------------------------ Set bot response -------------------------------------
 function setBotResponse(val) {
-    setTimeout(function() {
+    setTimeout(function () {
         if (val.length < 1) {
             //if there is no response from Rasa
             // msg = 'I couldn\'t get that. Let\' try something else!';
@@ -230,7 +232,7 @@ function setBotResponse(val) {
 
                 //check if there is image
                 if (val[i].hasOwnProperty("image")) {
-                    var BotResponse = "<div class='bot-msg'>" + "<img class='bot-img' src ='"+botLogoPath+"' />"
+                    var BotResponse = "<div class='bot-msg'>" + "<img class='bot-img' src ='" + botLogoPath + "' />"
                     '<img class="msg-image" src="' + val[i].image + '">' +
                         '</div>'
                     $(BotResponse).appendTo('.chat-area').hide().fadeIn(1000);
@@ -268,11 +270,11 @@ function mobileView() {
 
     if (chatPopup.style.display == "none") {
         chatPopup.style.display = "flex"
-            // chatInput.focus();
+        // chatInput.focus();
         chatBtn.style.display = "none"
         chatPopup.style.bottom = "0"
         chatPopup.style.right = "0"
-            // chatPopup.style.transition = "none"
+        // chatPopup.style.transition = "none"
         expandWindow.innerHTML = `<img src = "./icons/close.png" class = "icon" >`
     }
 }
